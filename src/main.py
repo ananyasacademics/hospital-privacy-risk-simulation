@@ -6,11 +6,11 @@ from src.simulation.anomaly_injector import inject_anomalies
 from src.simulation.generator import (
     events_to_dataframe,
     generate_access_events,
-    save_events_csv,
 )
 from src.simulation.validator import validate_access_log
 from src.detection.detector import run_rule_engine
 from src.detection.explanations import build_rule_explanations
+from src.evaluation.metrics import compute_metrics
 
 
 def main() -> None:
@@ -35,6 +35,9 @@ def main() -> None:
 
     predicted_total = int(detected_df["predicted_anomaly"].sum())
     print("Predicted anomalies:", predicted_total)
+
+    metrics = compute_metrics(detected_df)
+    print("Metrics:", metrics)
 
     detected_df.to_csv(output_path, index=False)
     print(f"Saved {len(detected_df)} events to {output_path}")
