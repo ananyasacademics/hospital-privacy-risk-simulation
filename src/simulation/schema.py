@@ -16,3 +16,5 @@ class AccessEvent:
     patient_id: str
     action: str
     access_location: str
+    is_anomaly: bool = False
+    anomaly_type: str = "none"
