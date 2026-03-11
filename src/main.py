@@ -1,54 +1,43 @@
 """
 Main entry point for Hospital Privacy Risk Simulation.
-
-Pipeline steps:
-1. Generate synthetic hospital access events
-2. Inject controlled anomalies
-3. Convert events to DataFrame
-4. Validate dataset
-5. Save dataset to CSV
 """
 
+from src.simulation.anomaly_injector import inject_anomalies
 from src.simulation.generator import (
-    generate_access_events,
     events_to_dataframe,
+    generate_access_events,
     save_events_csv,
 )
-
-from src.simulation.anomaly_injector import inject_anomalies
 from src.simulation.validator import validate_access_log
+from src.detection.detector import run_rule_engine
+from src.detection.explanations import build_rule_explanations
 
 
 def main() -> None:
-    """Run the synthetic data pipeline."""
-
     output_path = "data/generated/report_run/sample_events.csv"
 
-    # Step 1 — generate baseline events
     events = generate_access_events(num_events=100, seed=42)
-
-    # Step 2 — inject anomalies
     events = inject_anomalies(events, anomaly_count=10, seed=42)
 
-    # Step 3 — convert to DataFrame
     df = events_to_dataframe(events)
 
-    # Step 4 — validate dataset
     validation_result = validate_access_log(df)
     print("Validation result:", validation_result)
 
-    # Step 5 — report anomaly count
-    anomaly_total = int(df["is_anomaly"].sum())
-    print("Injected anomalies:", anomaly_total)
-
-    # Stop pipeline if validation fails
     if not validation_result["is_valid"]:
         raise ValueError("Generated access log failed validation.")
 
-    # Step 6 — export CSV
-    save_events_csv(events, output_path)
+    anomaly_total = int(df["is_anomaly"].sum())
+    print("Injected anomalies:", anomaly_total)
 
-    print(f"Saved {len(events)} events to {output_path}")
+    detected_df = run_rule_engine(df)
+    detected_df = build_rule_explanations(detected_df)
+
+    predicted_total = int(detected_df["predicted_anomaly"].sum())
+    print("Predicted anomalies:", predicted_total)
+
+    detected_df.to_csv(output_path, index=False)
+    print(f"Saved {len(detected_df)} events to {output_path}")
 
 
 if __name__ == "__main__":
