@@ -1,0 +1,4 @@
+event_id,timestamp,user_id,role,department,action,anomaly_type
+14,2025-01-15 08:14:00,U1999,Nurse,Radiology,edit,R1_excessive_access_frequency
+36,2025-01-15 08:36:00,U1999,Doctor,Cardiology,update,R1_excessive_access_frequency
+82,2025-01-15 09:22:00,U1999,Technician,Emergency,edit,R1_excessive_access_frequency

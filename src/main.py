@@ -3,6 +3,7 @@ Main entry point for Hospital Privacy Risk Simulation.
 """
 
 import os
+import pandas as pd
 
 from src.simulation.generator import generate_access_events, events_to_dataframe
 from src.simulation.validator import validate_access_log
@@ -12,6 +13,9 @@ from src.detection.detector import run_rule_engine
 from src.detection.explanations import build_rule_explanations
 
 from src.evaluation.metrics import compute_metrics
+from src.evaluation.baseline import random_baseline_metrics
+from src.evaluation.missed_cases import extract_missed_cases
+from src.evaluation.sensitivity_experiment import run_sensitivity_experiment
 
 from src.reporting.report_generator import (
     generate_confusion_matrix,
@@ -21,50 +25,125 @@ from src.reporting.report_generator import (
 
 
 def main() -> None:
-    # Step 1 — Generate events
-    events = generate_access_events(num_events=100, seed=42)
-    df = events_to_dataframe(events)
+    # -----------------------------
+    # Output paths
+    # -----------------------------
+    dataset_output_dir = "data/generated/report_run"
+    tables_output_dir = "outputs/report_run/tables"
+    report_output_dir = "outputs/report_run"
 
-    # Step 2 — Inject anomalies
+    os.makedirs(dataset_output_dir, exist_ok=True)
+    os.makedirs(tables_output_dir, exist_ok=True)
+    os.makedirs(report_output_dir, exist_ok=True)
+
+    dataset_path = os.path.join(dataset_output_dir, "sample_events.csv")
+    fp_output_path = os.path.join(report_output_dir, "false_positive_examples.csv")
+    fn_output_path = os.path.join(report_output_dir, "false_negative_examples.csv")
+    baseline_output_path = os.path.join(report_output_dir, "baseline_comparison.csv")
+    sensitivity_output_path = os.path.join(report_output_dir, "sensitivity_experiment.csv")
+
+    # -----------------------------
+    # Step 1 — Generate events
+    # -----------------------------
+    events = generate_access_events(num_events=100, seed=42)
     events = inject_anomalies(events, anomaly_count=10, seed=42)
     df = events_to_dataframe(events)
 
-    # Step 3 — Validate dataset
+    # -----------------------------
+    # Step 2 — Validate dataset
+    # -----------------------------
     validation_result = validate_access_log(df)
     print("Validation result:", validation_result)
 
     if not validation_result["is_valid"]:
         raise ValueError("Generated access log failed validation.")
 
-    # Step 4 — Count injected anomalies
     injected_total = int(df["is_anomaly"].sum())
     print("Injected anomalies:", injected_total)
 
-    # Step 5 — Run rule detection
+    # -----------------------------
+    # Step 3 — Run rule detection
+    # -----------------------------
     detected_df = run_rule_engine(df)
     detected_df = build_rule_explanations(detected_df)
 
     predicted_total = int(detected_df["predicted_anomaly"].sum())
     print("Predicted anomalies:", predicted_total)
 
-    # Step 6 — Compute metrics
+    # -----------------------------
+    # Step 4 — Compute rule-engine metrics
+    # -----------------------------
     metrics = compute_metrics(detected_df)
-    print("Metrics:", metrics)
+    print("Rule engine metrics:", metrics)
 
-    # Step 7 — Save dataset
-    dataset_output_dir = "data/generated/report_run"
-    os.makedirs(dataset_output_dir, exist_ok=True)
+    # -----------------------------
+    # Step 5 — Compute baseline metrics
+    # -----------------------------
+    baseline_metrics = random_baseline_metrics(detected_df, positive_rate=0.1)
+    print("Baseline metrics:", baseline_metrics)
 
-    dataset_path = os.path.join(dataset_output_dir, "sample_events.csv")
+    baseline_df = pd.DataFrame(
+        [
+            {
+                "method": "rule_engine",
+                "tp": metrics["tp"],
+                "tn": metrics["tn"],
+                "fp": metrics["fp"],
+                "fn": metrics["fn"],
+                "precision": round(metrics["precision"], 3),
+                "recall": round(metrics["recall"], 3),
+                "f1": round(metrics["f1"], 3),
+                "false_positive_rate": round(metrics["false_positive_rate"], 3),
+            },
+            {
+                "method": "baseline",
+                "tp": baseline_metrics["tp"],
+                "tn": baseline_metrics["tn"],
+                "fp": baseline_metrics["fp"],
+                "fn": baseline_metrics["fn"],
+                "precision": round(baseline_metrics["precision"], 3),
+                "recall": round(baseline_metrics["recall"], 3),
+                "f1": round(baseline_metrics["f1"], 3),
+                "false_positive_rate": round(baseline_metrics["false_positive_rate"], 3),
+            },
+        ]
+    )
+    baseline_df.to_csv(baseline_output_path, index=False)
+
+    # -----------------------------
+    # Step 6 — Extract missed cases
+    # -----------------------------
+    fp_df, fn_df = extract_missed_cases(detected_df, limit=5)
+    fp_df.to_csv(fp_output_path, index=False)
+    fn_df.to_csv(fn_output_path, index=False)
+
+    # -----------------------------
+    # Step 7 — Save full dataset
+    # -----------------------------
     detected_df.to_csv(dataset_path, index=False)
     print(f"Saved {len(detected_df)} events to {dataset_path}")
 
-    # Step 8 — Generate reporting tables
-    tables_output_dir = "outputs/report_run/tables"
+    # -----------------------------
+    # Step 8 — Save reporting tables
+    # -----------------------------
     confusion_df = generate_confusion_matrix(metrics)
     metrics_df = generate_metrics_table(metrics)
-
     save_tables(confusion_df, metrics_df, tables_output_dir)
+
+    print(f"Saved baseline comparison to {baseline_output_path}")
+    print(f"Saved false positives to {fp_output_path}")
+    print(f"Saved false negatives to {fn_output_path}")
+
+    # -----------------------------
+    # Step 9 — Sensitivity experiment
+    # -----------------------------
+    sensitivity_df = run_sensitivity_experiment(
+        total_events=1000,
+        anomaly_rates=[0.05, 0.02, 0.01],
+        seed=42,
+    )
+    sensitivity_df.to_csv(sensitivity_output_path, index=False)
+    print(f"Saved sensitivity experiment to {sensitivity_output_path}")
 
 
 if __name__ == "__main__":

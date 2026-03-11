@@ -1,0 +1,6 @@
+event_id,timestamp,user_id,role,department,action,rule_explanation
+8,2025-01-15 08:08:00,U1549,Admin,Cardiology,update,R4: role-action mismatch pattern
+17,2025-01-15 08:17:00,U1405,Admin,Oncology,update,R4: role-action mismatch pattern
+64,2025-01-15 09:04:00,U1564,Admin,Oncology,update,R4: role-action mismatch pattern
+66,2025-01-15 09:06:00,U1440,Admin,Pediatrics,update,R4: role-action mismatch pattern
+81,2025-01-15 09:21:00,U1519,Admin,Cardiology,update,R4: role-action mismatch pattern
