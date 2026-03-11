@@ -1,0 +1,17 @@
+run_name: report_run
+seed: 42
+
+total_events: 10000
+injected_anomalies: 500
+
+rules:
+  excessive_access_threshold: 20
+  after_hours_start: 20
+  after_hours_end: 6
+
+sensitivity_prevalence:
+  - 0.05
+  - 0.02
+
+output_dir: outputs/report_run
+log_dir: logs

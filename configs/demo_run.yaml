@@ -1,0 +1,8 @@
+run_name: demo_run
+seed: 42
+
+total_events: 1000
+injected_anomalies: 50
+
+output_dir: outputs/demo_run
+log_dir: logs
