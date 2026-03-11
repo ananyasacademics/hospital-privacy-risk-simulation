@@ -1,0 +1,9 @@
+,Metric,Value
+0,True Positives,7.0
+1,False Positives,7.0
+2,True Negatives,83.0
+3,False Negatives,3.0
+4,Precision,0.5
+5,Recall,0.7
+6,F1 Score,0.583
+7,False Positive Rate,0.078
