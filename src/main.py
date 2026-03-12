@@ -23,6 +23,14 @@ from src.reporting.report_generator import (
     save_tables,
 )
 
+from src.reporting.reproducibility import (
+    generate_run_id,
+    compute_file_hash,
+    write_run_manifest,
+    write_execution_log,
+    write_judge_summary,
+)
+
 
 def main() -> None:
     # -----------------------------
@@ -31,10 +39,12 @@ def main() -> None:
     dataset_output_dir = "data/generated/report_run"
     tables_output_dir = "outputs/report_run/tables"
     report_output_dir = "outputs/report_run"
+    logs_output_dir = "logs"
 
     os.makedirs(dataset_output_dir, exist_ok=True)
     os.makedirs(tables_output_dir, exist_ok=True)
     os.makedirs(report_output_dir, exist_ok=True)
+    os.makedirs(logs_output_dir, exist_ok=True)
 
     dataset_path = os.path.join(dataset_output_dir, "sample_events.csv")
     fp_output_path = os.path.join(report_output_dir, "false_positive_examples.csv")
@@ -144,6 +154,77 @@ def main() -> None:
     )
     sensitivity_df.to_csv(sensitivity_output_path, index=False)
     print(f"Saved sensitivity experiment to {sensitivity_output_path}")
+
+    # -----------------------------
+    # Step 10 — Reproducibility artifacts
+    # -----------------------------
+    run_id = generate_run_id()
+    manifest_path = os.path.join(report_output_dir, f"run_manifest_{run_id}.json")
+    execution_log_path = os.path.join(logs_output_dir, f"run_{run_id}.log")
+    judge_summary_path = os.path.join(report_output_dir, "judge_summary.txt")
+
+    dataset_hash = compute_file_hash(dataset_path)
+
+    manifest = {
+        "run_id": run_id,
+        "seed": 42,
+        "dataset_path": dataset_path,
+        "dataset_hash": dataset_hash,
+        "row_count": len(detected_df),
+        "injected_anomalies": injected_total,
+        "predicted_anomalies": predicted_total,
+        "metrics": metrics,
+        "baseline_metrics": baseline_metrics,
+        "artifacts": {
+            "baseline_comparison": baseline_output_path,
+            "false_positives": fp_output_path,
+            "false_negatives": fn_output_path,
+            "sensitivity_experiment": sensitivity_output_path,
+            "confusion_matrix": os.path.join(tables_output_dir, "confusion_matrix.csv"),
+            "metrics_summary": os.path.join(tables_output_dir, "metrics_summary.csv"),
+        },
+    }
+    write_run_manifest(manifest, manifest_path)
+
+    log_lines = [
+        f"run_id: {run_id}",
+        f"seed: 42",
+        f"dataset_path: {dataset_path}",
+        f"dataset_hash: {dataset_hash}",
+        f"row_count: {len(detected_df)}",
+        f"injected_anomalies: {injected_total}",
+        f"predicted_anomalies: {predicted_total}",
+        f"metrics: {metrics}",
+        f"baseline_metrics: {baseline_metrics}",
+    ]
+    write_execution_log(log_lines, execution_log_path)
+
+    judge_summary = f"""Hospital Privacy Risk Simulation — Judge Summary
+
+Run ID: {run_id}
+Seed: 42
+Rows Generated: {len(detected_df)}
+Injected Anomalies: {injected_total}
+Predicted Anomalies: {predicted_total}
+
+Rule Engine Metrics
+TP: {metrics['tp']}
+TN: {metrics['tn']}
+FP: {metrics['fp']}
+FN: {metrics['fn']}
+Precision: {round(metrics['precision'], 3)}
+Recall: {round(metrics['recall'], 3)}
+F1: {round(metrics['f1'], 3)}
+False Positive Rate: {round(metrics['false_positive_rate'], 3)}
+
+Baseline F1: {round(baseline_metrics['f1'], 3)}
+Dataset Hash: {dataset_hash}
+"""
+    write_judge_summary(judge_summary, judge_summary_path)
+
+    print(f"Saved run manifest to {manifest_path}")
+    print(f"Saved execution log to {execution_log_path}")
+    print(f"Saved judge summary to {judge_summary_path}")
 
 
 if __name__ == "__main__":
