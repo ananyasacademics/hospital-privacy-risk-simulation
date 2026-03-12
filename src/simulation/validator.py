@@ -18,11 +18,20 @@ REQUIRED_COLUMNS = [
     "patient_id",
     "action",
     "access_location",
+    "is_anomaly",
+    "anomaly_type",
 ]
 
 VALID_ROLES = {"Doctor", "Nurse", "Admin", "Technician"}
 VALID_DEPARTMENTS = {"Cardiology", "Oncology", "Emergency", "Radiology", "Pediatrics"}
 VALID_ACTIONS = {"view", "edit", "update"}
+VALID_ANOMALY_TYPES = {
+    "none",
+    "R1_excessive_access_frequency",
+    "R2_after_hours_activity",
+    "R3_cross_department_access",
+    "R4_role_action_mismatch",
+}
 
 
 def validate_access_log(df: pd.DataFrame) -> Dict[str, object]:
@@ -51,6 +60,10 @@ def validate_access_log(df: pd.DataFrame) -> Dict[str, object]:
         invalid_actions = sorted(set(df["action"]) - VALID_ACTIONS)
         if invalid_actions:
             errors.append(f"Invalid action values: {invalid_actions}")
+
+        invalid_anomaly_types = sorted(set(df["anomaly_type"]) - VALID_ANOMALY_TYPES)
+        if invalid_anomaly_types:
+            errors.append(f"Invalid anomaly_type values: {invalid_anomaly_types}")
 
     return {
         "is_valid": len(errors) == 0,

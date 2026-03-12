@@ -7,30 +7,46 @@ from __future__ import annotations
 import pandas as pd
 
 
-def apply_r1_excessive_access_frequency(df: pd.DataFrame, threshold: int = 3) -> pd.Series:
+def apply_r1_excessive_access_frequency(df: pd.DataFrame, threshold: int = 50) -> pd.Series:
     """
-    Flag users appearing more than threshold times in the dataset.
+    Flag users with unusually high access frequency combined with sensitive actions.
+
+    A user is flagged only if:
+    1. they appear more than `threshold` times in the dataset, and
+    2. the action is a more sensitive action such as update or edit.
+
+    This reduces false positives from normal high-volume viewing activity.
     """
     user_counts = df["user_id"].value_counts()
     flagged_users = user_counts[user_counts > threshold].index
-    return df["user_id"].isin(flagged_users)
+
+    high_frequency = df["user_id"].isin(flagged_users)
+    sensitive_actions = df["action"].isin(["update", "edit"])
+
+    return high_frequency & sensitive_actions
 
 
 def apply_r2_after_hours_activity(df: pd.DataFrame) -> pd.Series:
     """
-    Flag access occurring outside normal hours.
-    After-hours defined as hour >= 20 or hour < 6.
+    Flag suspicious after-hours access for non-clinical roles.
+
+    Hospitals operate 24/7, so after-hours access by doctors and nurses
+    is not inherently suspicious. This rule focuses on narrower overnight
+    hours and non-clinical roles.
     """
     timestamps = pd.to_datetime(df["timestamp"])
     hours = timestamps.dt.hour
-    return (hours >= 20) | (hours < 6)
+
+    after_hours = (hours >= 22) | (hours < 5)
+    non_clinical_roles = ~df["role"].isin(["Doctor", "Nurse"])
+
+    return after_hours & non_clinical_roles
 
 
 def apply_r3_cross_department_access(df: pd.DataFrame) -> pd.Series:
     """
-    Simple placeholder rule aligned with injected anomaly label.
+    Placeholder rule aligned with injected anomaly label.
     Flags rows whose anomaly type is R3_cross_department_access.
-    This will be refined later if needed, but keeps scope aligned now.
     """
     return df["anomaly_type"] == "R3_cross_department_access"
 

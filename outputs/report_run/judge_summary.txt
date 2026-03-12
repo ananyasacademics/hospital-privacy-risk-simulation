@@ -1,20 +1,20 @@
 Hospital Privacy Risk Simulation — Judge Summary
 
-Run ID: 20260311_173853
+Run ID: 20260311_181701
 Seed: 42
-Rows Generated: 100
-Injected Anomalies: 10
-Predicted Anomalies: 14
+Rows Generated: 10000
+Injected Anomalies: 500
+Predicted Anomalies: 2351
 
 Rule Engine Metrics
-TP: 7
-TN: 83
-FP: 7
-FN: 3
-Precision: 0.5
-Recall: 0.7
-F1: 0.583
-False Positive Rate: 0.078
+TP: 399
+TN: 7548
+FP: 1952
+FN: 101
+Precision: 0.17
+Recall: 0.798
+F1: 0.28
+False Positive Rate: 0.205
 
-Baseline F1: 0.1
-Dataset Hash: 1dcda31d88922f003f0bd18e227006341d49a0d38d6d917ca892ad2b3411dc9d
+Baseline F1: 0.067
+Dataset Hash: 68d150e99613a0bd3249bc967d8d597e04cb9ca9a115a20ce21fb684c0e49f62

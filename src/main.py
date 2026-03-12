@@ -66,8 +66,8 @@ def main() -> None:
     # -----------------------------
     # Step 1 — Generate events
     # -----------------------------
-    events = generate_access_events(num_events=100, seed=42)
-    events = inject_anomalies(events, anomaly_count=10, seed=42)
+    events = generate_access_events(num_events=10000, seed=42)
+    events = inject_anomalies(events, anomaly_count=500, seed=42)
     df = events_to_dataframe(events)
 
     # -----------------------------

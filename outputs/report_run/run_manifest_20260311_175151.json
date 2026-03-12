@@ -1,0 +1,40 @@
+{
+  "run_id": "20260311_175151",
+  "seed": 42,
+  "dataset_path": "data/generated/report_run\\sample_events.csv",
+  "dataset_hash": "821784050e243ee4da255c7b54ad5b2a64c76e7a82fd80117fd10c7a06021dd8",
+  "row_count": 10000,
+  "injected_anomalies": 500,
+  "predicted_anomalies": 9987,
+  "metrics": {
+    "tp": 500,
+    "tn": 13,
+    "fp": 9487,
+    "fn": 0,
+    "precision": 0.05006508460999299,
+    "recall": 1.0,
+    "f1": 0.09535615523982072,
+    "false_positive_rate": 0.9986315789473684
+  },
+  "baseline_metrics": {
+    "tp": 50,
+    "tn": 8550,
+    "fp": 950,
+    "fn": 450,
+    "precision": 0.05,
+    "recall": 0.1,
+    "f1": 0.06666666666666667,
+    "false_positive_rate": 0.1
+  },
+  "artifacts": {
+    "baseline_comparison": "outputs/report_run\\baseline_comparison.csv",
+    "false_positives": "outputs/report_run\\false_positive_examples.csv",
+    "false_negatives": "outputs/report_run\\false_negative_examples.csv",
+    "sensitivity_experiment": "outputs/report_run\\sensitivity_experiment.csv",
+    "execution_trace": "outputs/report_run\\execution_trace.csv",
+    "rule_trigger_counts": "outputs/report_run\\rule_trigger_counts.csv",
+    "board_summary": "outputs/report_run\\board_summary.csv",
+    "confusion_matrix": "outputs/report_run/tables\\confusion_matrix.csv",
+    "metrics_summary": "outputs/report_run/tables\\metrics_summary.csv"
+  }
+}
