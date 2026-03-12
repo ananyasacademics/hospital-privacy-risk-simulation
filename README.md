@@ -191,15 +191,16 @@ These cases illustrate the trade-off between **detecting suspicious activity and
 ---
 
 # Repository Structure
-configs/ experiment configurations
-data/ synthetic dataset generation
-docs/ project documentation
-logs/ experiment logs
-notebooks/ exploratory analysis notebooks
-outputs/ experiment outputs
-science_day_artifacts/ results used for science fair poster
-src/ simulator and detection engine
-tests/ validation tests
+
+configs/                experiment configuration
+data/                   synthetic dataset generation
+docs/                   project documentation
+logs/                   execution logs
+notebooks/              analysis notebooks
+outputs/                experiment outputs
+science_day_artifacts/  results used in science fair poster
+src/                    simulator and detection engine
+tests/                  validation tests
 
 
 ---
