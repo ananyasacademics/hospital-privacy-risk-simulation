@@ -31,6 +31,12 @@ from src.reporting.reproducibility import (
     write_judge_summary,
 )
 
+from src.reporting.execution_trace import (
+    generate_execution_trace,
+    generate_rule_trigger_counts,
+    generate_board_summary,
+)
+
 
 def main() -> None:
     # -----------------------------
@@ -40,17 +46,22 @@ def main() -> None:
     tables_output_dir = "outputs/report_run/tables"
     report_output_dir = "outputs/report_run"
     logs_output_dir = "logs"
+    judge_packet_dir = "docs/judge_packet"
 
     os.makedirs(dataset_output_dir, exist_ok=True)
     os.makedirs(tables_output_dir, exist_ok=True)
     os.makedirs(report_output_dir, exist_ok=True)
     os.makedirs(logs_output_dir, exist_ok=True)
+    os.makedirs(judge_packet_dir, exist_ok=True)
 
     dataset_path = os.path.join(dataset_output_dir, "sample_events.csv")
     fp_output_path = os.path.join(report_output_dir, "false_positive_examples.csv")
     fn_output_path = os.path.join(report_output_dir, "false_negative_examples.csv")
     baseline_output_path = os.path.join(report_output_dir, "baseline_comparison.csv")
     sensitivity_output_path = os.path.join(report_output_dir, "sensitivity_experiment.csv")
+    execution_trace_path = os.path.join(report_output_dir, "execution_trace.csv")
+    rule_trigger_counts_path = os.path.join(report_output_dir, "rule_trigger_counts.csv")
+    board_summary_path = os.path.join(report_output_dir, "board_summary.csv")
 
     # -----------------------------
     # Step 1 — Generate events
@@ -156,12 +167,29 @@ def main() -> None:
     print(f"Saved sensitivity experiment to {sensitivity_output_path}")
 
     # -----------------------------
-    # Step 10 — Reproducibility artifacts
+    # Step 10 — Execution trace artifacts
+    # -----------------------------
+    execution_trace_df = generate_execution_trace(detected_df, limit=10)
+    execution_trace_df.to_csv(execution_trace_path, index=False)
+
+    rule_trigger_counts_df = generate_rule_trigger_counts(detected_df)
+    rule_trigger_counts_df.to_csv(rule_trigger_counts_path, index=False)
+
+    board_summary_df = generate_board_summary(metrics, baseline_metrics)
+    board_summary_df.to_csv(board_summary_path, index=False)
+
+    print(f"Saved execution trace to {execution_trace_path}")
+    print(f"Saved rule trigger counts to {rule_trigger_counts_path}")
+    print(f"Saved board summary to {board_summary_path}")
+
+    # -----------------------------
+    # Step 11 — Reproducibility artifacts
     # -----------------------------
     run_id = generate_run_id()
     manifest_path = os.path.join(report_output_dir, f"run_manifest_{run_id}.json")
     execution_log_path = os.path.join(logs_output_dir, f"run_{run_id}.log")
     judge_summary_path = os.path.join(report_output_dir, "judge_summary.txt")
+    judge_packet_summary_path = os.path.join(judge_packet_dir, "judge_summary.txt")
 
     dataset_hash = compute_file_hash(dataset_path)
 
@@ -180,6 +208,9 @@ def main() -> None:
             "false_positives": fp_output_path,
             "false_negatives": fn_output_path,
             "sensitivity_experiment": sensitivity_output_path,
+            "execution_trace": execution_trace_path,
+            "rule_trigger_counts": rule_trigger_counts_path,
+            "board_summary": board_summary_path,
             "confusion_matrix": os.path.join(tables_output_dir, "confusion_matrix.csv"),
             "metrics_summary": os.path.join(tables_output_dir, "metrics_summary.csv"),
         },
@@ -221,10 +252,12 @@ Baseline F1: {round(baseline_metrics['f1'], 3)}
 Dataset Hash: {dataset_hash}
 """
     write_judge_summary(judge_summary, judge_summary_path)
+    write_judge_summary(judge_summary, judge_packet_summary_path)
 
     print(f"Saved run manifest to {manifest_path}")
     print(f"Saved execution log to {execution_log_path}")
     print(f"Saved judge summary to {judge_summary_path}")
+    print(f"Saved judge packet summary to {judge_packet_summary_path}")
 
 
 if __name__ == "__main__":
