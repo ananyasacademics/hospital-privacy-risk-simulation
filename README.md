@@ -1,168 +1,45 @@
-## Science Day Artifacts
-
-Key experiment outputs used for the science fair board are available in the `science_day_artifacts` folder, including:
-
-- confusion matrix
-- detection metrics
-- baseline comparison
-- example false positives
-- example false negatives
-- judge summary
-
 # Hospital Privacy Risk Simulation
+### Rule-Based Detection of Suspicious Electronic Health Record Access
 
-Rule-based hospital privacy risk simulation developed for Regional Science Day (SOFT category).
+A reproducible simulation framework for detecting suspicious electronic health record (EHR) access using rule-based anomaly detection.
 
-This project implements a reproducible software system that generates synthetic hospital access logs and evaluates rule-based detection of suspicious privacy-risk events. The system simulates electronic health record access activity, injects controlled anomalies, applies detection rules, and evaluates detection performance using standard classification metrics.
+This project generates synthetic hospital access logs, injects controlled anomalies, applies rule-based detection rules, and evaluates detection performance using standard classification metrics.
 
-Because real hospital audit logs contain protected health information, the project uses fully synthetic data to safely study privacy-risk detection behavior.
-
----
-
-## Project Overview
-
-Hospitals generate large volumes of electronic access logs as staff interact with patient records. Unusual access patterns may indicate potential privacy risks such as unauthorized viewing, excessive record access, or activity outside expected workflows.
-
-This project builds a reproducible simulation pipeline that:
-
-1. Generates synthetic hospital access log events  
-2. Validates the generated data structure  
-3. Injects controlled anomalies for evaluation  
-4. Applies rule-based detection methods  
-5. Measures detection performance using standard metrics  
+Developed for **Regional Science Day** in the **SOFT (Software Systems) category**.
 
 ---
 
-## Detection Rules
+# Key Result
 
-The rule-based detection engine evaluates events using four privacy-risk rules:
+Baseline experiment:
 
-- **R1 — Excessive Access Frequency**
-- **R2 — After-Hours Activity**
-- **R3 — Cross-Department Access**
-- **R4 — Role–Action Mismatch**
+- **10,000 simulated access events**
+- **500 injected anomalies**
 
-These rules are designed to identify suspicious access behavior in a transparent and explainable way.
-
----
-
-## System Components
-
-The implemented system includes:
-
-- Synthetic hospital access log generator  
-- Validation layer for generated events  
-- Controlled anomaly injection engine  
-- Rule-based detection engine  
-- Evaluation and metrics pipeline  
-- Sensitivity experiment framework  
-- Reproducibility artifacts and experiment logs  
-
----
-
-## Baseline Experiment
-
-The baseline experiment was executed using a synthetic dataset containing:
-
-- **Total events:** 10,000  
-- **Injected anomalies:** 500  
-
-### Confusion Matrix
-
-|                     | Actual Anomaly | Actual Normal |
-|---------------------|---------------|---------------|
-| Predicted Anomaly   | 399 (True Positive) | 1952 (False Positive) |
-| Predicted Normal    | 101 (False Negative) | 7548 (True Negative) |
-
-### Detection Metrics
+Detection results:
 
 | Metric | Value |
 |------|------|
+| True Positives | 399 |
+| False Positives | 1952 |
+| True Negatives | 7548 |
+| False Negatives | 101 |
 | Precision | 0.17 |
 | Recall | 0.80 |
 | F1 Score | 0.28 |
 | False Positive Rate | 0.205 |
 
-**Key Result:**  
 The system detected **399 of 500 injected anomalies**, achieving **80% recall** in the baseline experiment.
 
 ---
 
-## Sensitivity Analysis
+# Science Day Artifacts
 
-To evaluate how detection performance changes under different conditions, the simulator was executed with varying anomaly prevalence levels.
+Key outputs used in the science fair poster are located in:
+science_day_artifacts/
 
-Anomaly prevalence tested:
 
-- **5% anomalies** — baseline experiment  
-- **2% anomalies** — reduced anomaly frequency  
-- **1% anomalies** — rare anomaly scenario  
-
-Detection performance remained relatively consistent as anomaly prevalence decreased from **5% to 1%**, suggesting that the rule-based detection approach behaves consistently even when suspicious events are rare.
-
----
-
-## Synthetic Dataset
-
-The simulator generates structured hospital access log events representing interactions between healthcare staff and patient records.
-
-Each event includes fields such as:
-
-- event_id  
-- user_id  
-- role  
-- department  
-- patient_id  
-- action  
-- timestamp  
-- anomaly_type  
-
-The dataset is fully synthetic and designed to mimic realistic hospital access patterns without using real patient data.
-
----
-
-## Reproducibility
-
-This project was designed so that experiments can be repeated and verified.
-
-Reproducibility artifacts include:
-
-- Random seed: **42**  
-- Run manifest  
-- Dataset hash verification  
-- Execution logs  
-- Experiment summaries  
-
-These artifacts help ensure consistent experiment execution and verifiable results.
-
----
-
-## Error Analysis
-
-Example missed-case patterns include:
-
-- **False Positive:** administrator updating multiple records during legitimate maintenance  
-- **False Positive:** authorized after-hours access in a 24/7 hospital environment  
-- **False Negative:** slow browsing behavior that remains below rule thresholds  
-
-These cases illustrate the trade-off between detecting suspicious patterns and minimizing unnecessary alerts.
-
----
-
-## Limitations
-
-- The dataset is synthetic and approximates real hospital workflows.  
-- Rule-based detection relies on fixed thresholds and may generate false positives.  
-- Contextual information such as staff schedules or patient assignments is not modeled.  
-- The system is a research prototype and not intended for operational hospital deployment.
-
----
-
-## Repository Structure
-
-Example structure of the repository:
-
-Key outputs include:
+This folder contains:
 
 - confusion_matrix.csv  
 - metrics_summary.csv  
@@ -170,21 +47,176 @@ Key outputs include:
 - false_positive_examples.csv  
 - false_negative_examples.csv  
 - judge_summary.txt  
+- board_summary.csv  
+
+These artifacts provide **evidence supporting the results presented on the poster**.
 
 ---
 
-## Future Work
+# System Pipeline
 
-Possible future extensions include:
+The system implements a complete simulation and evaluation pipeline:
 
-- modeling hospital shift schedules and contextual access patterns  
-- incorporating behavioral baselines for user activity  
-- comparing rule-based detection with machine learning methods  
+Synthetic Log Generator
+↓
+Validation Layer
+↓
+Anomaly Injection
+↓
+Rule-Based Detection Engine
+↓
+Metrics & Evaluation
+
 
 ---
 
-## Author
+# Detection Rules
+
+The rule-based engine evaluates events using four privacy-risk detection rules:
+
+**R1 — Excessive Access Frequency**  
+Flags unusually high numbers of patient record accesses.
+
+**R2 — After-Hours Activity**  
+Detects access outside typical hospital operating hours.
+
+**R3 — Cross-Department Access**  
+Identifies staff accessing records from unrelated departments.
+
+**R4 — Role–Action Mismatch**  
+Flags actions inconsistent with the user's role.
+
+These rules provide **transparent and explainable detection logic**.
+
+---
+
+# Sensitivity Analysis
+
+To evaluate system robustness, the simulator was executed with different anomaly prevalence levels.
+
+Tested anomaly rates:
+
+- **5% anomalies (baseline)**
+- **2% anomalies**
+- **1% anomalies**
+
+Detection performance remained relatively stable as anomaly prevalence decreased, suggesting that the rule-based approach behaves consistently even when suspicious events are rare.
+
+---
+
+# Synthetic Dataset
+
+Because real hospital audit logs contain protected patient information, this project uses a **fully synthetic dataset**.
+
+Each simulated access event contains fields such as:
+
+- event_id
+- user_id
+- role
+- department
+- patient_id
+- action
+- timestamp
+- anomaly_type
+
+The dataset is designed to **approximate realistic hospital access patterns without exposing any real patient data**.
+
+---
+
+# Reproducibility
+
+This project was designed to allow experiments to be reproduced and verified.
+
+Reproducibility artifacts include:
+
+- **Random seed:** 42
+- run manifest
+- dataset hash
+- execution logs
+- rule trigger counts
+- experiment summaries
+
+These ensure that experiment outputs can be **consistently regenerated**.
+
+---
+
+# How to Run the Simulation
+
+Clone the repository:
+git clone https://github.com/ananyasacademics/hospital-privacy-risk-simulation.git
+
+
+Navigate to the project folder:
+cd hospital-privacy-risk-simulation
+
+
+Run the simulation pipeline:
+python src/run_simulation.py
+
+
+This will:
+
+- generate synthetic hospital access logs
+- inject controlled anomalies
+- run the rule-based detection engine
+- compute evaluation metrics
+- produce outputs in the `outputs/` folder
+
+---
+
+# Error Analysis
+
+Example missed-case patterns include:
+
+**False Positive**
+- administrator performing legitimate bulk updates
+
+**False Positive**
+- authorized after-hours access in a 24/7 hospital environment
+
+**False Negative**
+- slow browsing behavior that stays below rule thresholds
+
+These cases illustrate the trade-off between **detecting suspicious activity and minimizing false alerts**.
+
+---
+
+# Limitations
+
+- The dataset is synthetic and approximates real hospital workflows.
+- Rule-based detection relies on fixed thresholds.
+- Contextual information such as staff schedules or patient assignments is not modeled.
+- This system is a research prototype and is not intended for operational deployment.
+
+---
+
+# Repository Structure
+configs/ experiment configurations
+data/ synthetic dataset generation
+docs/ project documentation
+logs/ experiment logs
+notebooks/ exploratory analysis notebooks
+outputs/ experiment outputs
+science_day_artifacts/ results used for science fair poster
+src/ simulator and detection engine
+tests/ validation tests
+
+
+---
+
+# Future Work
+
+Possible future improvements include:
+
+- modeling hospital staff shift schedules
+- incorporating behavioral access baselines
+- comparing rule-based detection with machine learning methods
+
+---
+
+# Author
 
 **Ananya Desai**  
 William Mason High School  
-Regional Science Day – SOFT Category
+Regional Science Day Project  
+Category: **SOFT**
